@@ -62,3 +62,4 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline-color:va
   .landing-footer{height:clamp(55px,7.4vh,80px)}
   .landing-copy{margin-left:clamp(20px,3vw,48px)}
 }
+@media(min-width:1000px){.landing-copy{margin-left:clamp(70px,8.5vw,110px)}}
