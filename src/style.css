@@ -60,4 +60,5 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline-color:va
   .landing-entry{flex:1;min-height:0;padding:12px 24px}
   .landing-entry .primary-button{min-height:clamp(58px,7.9vh,85px)}
   .landing-footer{height:clamp(55px,7.4vh,80px)}
+  .landing-copy{margin-left:clamp(20px,3vw,48px)}
 }
