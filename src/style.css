@@ -69,3 +69,6 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline-color:va
 .view-under{height:38px;flex:none;justify-content:flex-end;padding:0 20px}.source-disclosure p{bottom:34px}
 @media(max-width:850px){.view-under{height:38px}.student-view .viewer-shell{min-height:300px}}
 .submit-row .submitted-note{display:block;margin:0;color:var(--accent);font-family:'DM Sans',sans-serif;font-size:11px;line-height:1.5;white-space:normal}
+.landing h1 .headline-line{display:block;white-space:nowrap}
+@media(min-width:701px){.landing h1{font-size:clamp(44px,4.5vw,72px)}}
+@media(max-width:700px){.landing h1{font-size:clamp(38px,8vw,50px)}}
