@@ -48,3 +48,16 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline-color:va
 @media(max-width:900px){.landing-hero-inner{gap:3vw}.landing h1{font-size:clamp(48px,6.2vw,70px)}.landing-art{height:320px}.landing-copy>p{font-size:17px}.landing-hero{min-height:400px}}
 @media(max-width:700px){.site-header{height:64px;padding-inline:20px}.header-right{gap:12px}.header-teacher,.header-login,.header-logout,.header-user{font-size:12px}.header-login,.header-logout{padding:8px 11px;border-radius:9px}.header-user{max-width:135px}.landing{min-height:calc(100vh - 64px)}.landing-hero{min-height:0}.landing-hero-inner{grid-template-columns:1fr;gap:10px;padding:54px 25px 25px}.landing h1{font-size:clamp(51px,10vw,70px)}.landing-copy>p{font-size:16px}.landing-art{height:260px}.landing-art img{max-width:320px}.landing-entry{min-height:260px;padding:42px 25px}.landing-entry .primary-button{min-height:68px;font-size:18px}.landing-footer{height:70px;gap:15px;font-size:12px}.landing-footer span{font-size:12px}}
 @media(max-width:400px){.landing h1{font-size:48px}.landing-art{height:220px}.landing-hero-inner{padding-top:40px}}
+
+@media(min-width:701px){
+  .site-header{height:clamp(64px,8.2vh,89px)}
+  .landing{height:calc(100dvh - clamp(64px,8.2vh,89px));min-height:0}
+  .landing-hero{flex:0 1 55%;min-height:0}
+  .landing-hero-inner{height:100%;padding-top:12px;padding-bottom:12px}
+  .landing h1{font-size:clamp(48px,min(5.2vw,8vh),90px);margin:clamp(10px,2vh,24px) 0 clamp(12px,2.5vh,30px)}
+  .landing-copy>p{font-size:clamp(15px,1.7vh,21px)}
+  .landing-art{height:100%;max-height:410px;min-height:0}
+  .landing-entry{flex:1;min-height:0;padding:12px 24px}
+  .landing-entry .primary-button{min-height:clamp(58px,7.9vh,85px)}
+  .landing-footer{height:clamp(55px,7.4vh,80px)}
+}
