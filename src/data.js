@@ -25,6 +25,8 @@ function demoData() {
     ],
     questions: defaultQuestions.map((prompt, i) => ({ position: i + 1, prompt })),
     responses: {},
+    settings: { singleton: true, due_at: null, max_score: 3, grades_released: false },
+    grades: {},
   };
 }
 function writeDemo(data) { localStorage.setItem(demoKey, JSON.stringify(data)); }
@@ -79,19 +81,25 @@ export async function signOut() {
 export async function loadClassroom(role, userId) {
   if (demoMode) {
     const saved = demoData();
+    const settings = saved.settings || { singleton: true, due_at: null, max_score: 3, grades_released: false };
     return {
       models: [...saved.models].filter((m) => role === 'teacher' || m.active).sort((a, b) => a.order_index - b.order_index),
       questions: [...saved.questions].sort((a, b) => a.position - b.position),
       responses: role === 'student' ? Object.values(saved.responses).filter((r) => r.user_id === userId) : Object.values(saved.responses),
       profiles: role === 'teacher' ? [{ id: 'demo-student', email: 'student@example.com', display_name: '미리보기 학생' }] : [],
+      settings,
+      grades: role === 'teacher' || settings.grades_released ? Object.values(saved.grades || {}).filter((g) => role === 'teacher' || g.user_id === userId) : [],
     };
   }
-  const [modelsResult, questionsResult, responsesResult] = await Promise.all([
+  const [modelsResult, questionsResult, responsesResult, settingsResult, gradesResult] = await Promise.all([
     supabase.from('models').select('*').order('order_index'),
     supabase.from('questions').select('*').order('position'),
     supabase.from('responses').select('*'),
+    supabase.from('class_settings').select('*').single(),
+    supabase.from('grades').select('*'),
   ]);
   const models = check(modelsResult), questions = check(questionsResult), responses = check(responsesResult);
+  const settings = check(settingsResult), grades = check(gradesResult);
   let profiles = [];
   if (role === 'teacher') {
     const [detailsResult, profilesResult] = await Promise.all([
@@ -102,7 +110,7 @@ export async function loadClassroom(role, userId) {
     models.forEach((model) => Object.assign(model, details.get(model.id) || {}));
     profiles = check(profilesResult);
   }
-  return { models, questions, responses, profiles };
+  return { models, questions, responses, profiles, settings, grades };
 }
 
 export function modelUrl(model) {
@@ -114,6 +122,7 @@ export async function saveDraft(userId, modelId, answers) {
   const payload = { user_id: userId, model_id: modelId, draft_answers: answers, updated_at: new Date().toISOString() };
   if (demoMode) {
     const saved = demoData();
+    if (saved.settings?.due_at && Date.now() >= Date.parse(saved.settings.due_at)) throw new Error('제출 마감 시간이 지났습니다.');
     const key = `${userId}:${modelId}`;
     saved.responses[key] = { ...saved.responses[key], ...payload, submitted_answers: saved.responses[key]?.submitted_answers || null, submitted_at: saved.responses[key]?.submitted_at || null, submission_count: saved.responses[key]?.submission_count || 0 };
     writeDemo(saved);
@@ -125,6 +134,7 @@ export async function saveDraft(userId, modelId, answers) {
 export async function submitAll(userId) {
   if (demoMode) {
     const saved = demoData();
+    if (saved.settings?.due_at && Date.now() >= Date.parse(saved.settings.due_at)) throw new Error('제출 마감 시간이 지났습니다.');
     const active = saved.models.filter((m) => m.active);
     if (active.some((m) => [1, 2, 3].some((n) => !saved.responses[`${userId}:${m.id}`]?.draft_answers?.[n]?.trim()))) throw new Error('모든 시료의 세 문항을 작성해 주세요.');
     const submittedAt = new Date().toISOString();
@@ -143,6 +153,23 @@ export async function submitAll(userId) {
 export async function saveQuestions(questions) {
   if (demoMode) { const saved = demoData(); saved.questions = questions; writeDemo(saved); return; }
   check(await supabase.from('questions').upsert(questions.map(({ position, prompt }) => ({ position, prompt, updated_at: new Date().toISOString() }))));
+}
+
+export async function saveClassSettings(settings) {
+  if (demoMode) { const saved = demoData(); saved.settings = { ...saved.settings, ...settings }; writeDemo(saved); return; }
+  check(await supabase.from('class_settings').update(settings).eq('singleton', true));
+}
+
+export async function saveGrade(userId, modelId, score, feedback) {
+  if (demoMode) {
+    const saved = demoData();
+    const key = `${userId}:${modelId}`;
+    saved.grades ||= {};
+    saved.grades[key] = { user_id: userId, model_id: modelId, score, feedback, graded_at: new Date().toISOString() };
+    writeDemo(saved);
+    return;
+  }
+  check(await supabase.rpc('save_grade', { student_id: userId, sample_id: modelId, points: score, note: feedback }));
 }
 
 export async function saveModelOrder(models) {
