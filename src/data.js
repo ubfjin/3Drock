@@ -128,7 +128,16 @@ export async function saveDraft(userId, modelId, answers) {
     writeDemo(saved);
     return saved.responses[key];
   }
-  return check(await supabase.from('responses').upsert(payload, { onConflict: 'user_id,model_id' }).select().single());
+  const existing = check(await supabase.from('responses')
+    .update({ draft_answers: answers, updated_at: payload.updated_at })
+    .eq('user_id', userId).eq('model_id', modelId).select().maybeSingle());
+  if (existing) return existing;
+  const inserted = await supabase.from('responses').insert(payload).select().single();
+  if (!inserted.error) return inserted.data;
+  if (inserted.error.code !== '23505') throw inserted.error;
+  return check(await supabase.from('responses')
+    .update({ draft_answers: answers, updated_at: payload.updated_at })
+    .eq('user_id', userId).eq('model_id', modelId).select().single());
 }
 
 export async function submitAll(userId) {
