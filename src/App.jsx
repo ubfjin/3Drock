@@ -4,19 +4,19 @@ import { currentIdentity, demoMode, googleSignIn, loadClassroom, previewSignIn, 
 const Student = lazy(() => import('./Student.jsx'));
 const Teacher = lazy(() => import('./Teacher.jsx'));
 
-function Logo() { return <span className="logo"><span className="logo-stone">◆</span> ROCK<span>LAB</span><small>CLASSROOM</small></span>; }
+function Logo() { return <span className="logo"><span className="logo-stone">◆</span> ROCK<span>LAB</span></span>; }
 
 function Landing({ identity, busy, error, onStudent, onTeacher, onStart }) {
   const [teacherOpen, setTeacherOpen] = useState(false);
   const [code, setCode] = useState('');
   return <main className="landing">
-    <div className="landing-copy"><div className="overline"><span className="dot" /> INTERACTIVE EARTH SCIENCE</div><h1>돌을 보는<br />새로운 <em>시선.</em></h1><p>암석을 돌려 보고, 가까이 들여다보고,<br />관찰한 생각을 나만의 보고서로 남겨보세요.</p><div className="landing-actions">
-      {identity ? <button className="primary-button" onClick={onStart}>{identity.role === 'teacher' ? '교사 대시보드 열기' : '활동 시작'} <span>↗</span></button> : <button className="primary-button" disabled={busy} onClick={onStudent}>{demoMode ? '학생 화면 미리보기' : 'Google 계정으로 시작'} <span>↗</span></button>}
+    <div className="landing-copy"><div className="overline">INTERACTIVE EARTH SCIENCE</div><h1>암석을 관찰하고<br />생각을 <em>기록하다.</em></h1><p>암석을 돌려 보고, 가까이 들여다보고,<br />관찰한 생각을 나만의 보고서로 남겨보세요.</p><div className="landing-actions">
+      {identity ? <button className="primary-button" onClick={onStart}>{identity.role === 'teacher' ? '교사 대시보드 열기' : '활동 시작'} <span>→</span></button> : <button className="primary-button" disabled={busy} onClick={onStudent}>{!demoMode && <span className="google-mark" aria-hidden="true">G</span>}{demoMode ? '학생 화면 미리보기' : 'Google 계정으로 시작'} <span>→</span></button>}
       {!identity && <button className="text-button" onClick={() => setTeacherOpen(!teacherOpen)}>교사 화면 {teacherOpen ? '닫기' : '열기'} <span>→</span></button>}
     </div>{teacherOpen && !identity && <form className="teacher-login" onSubmit={(e) => { e.preventDefault(); onTeacher(code); }}><label htmlFor="teacher-code">교사 접근 코드</label><div><input id="teacher-code" type="password" value={code} onChange={(e) => setCode(e.target.value)} placeholder="접근 코드를 입력하세요" autoComplete="off" disabled={busy} /><button type="submit" disabled={busy || !code.trim()}>입장 →</button></div></form>}
     {error && <p className="notice error" role="alert">{error}</p>}{demoMode && <p className="demo-note">미리보기 모드 · 작성 내용은 이 브라우저에만 저장됩니다.</p>}</div>
     <div className="landing-art" aria-hidden="true"><div className="art-grid" /><div className="art-orbit orbit-a" /><div className="art-orbit orbit-b" /><div className="art-rock"><span /></div><div className="art-label top">SAMPLE / 01</div><div className="art-label bottom">OBSERVE · INFER · RECORD</div><div className="art-cross">✳</div></div>
-    <div className="landing-footer"><span>01 / 관찰</span><span>02 / 추론</span><span>03 / 기록</span><span className="footer-long">암석 표면에서 시작하는 지구과학 탐구</span></div>
+    <div className="landing-footer"><div><span>01</span><strong>관찰</strong><small>360°로 돌리며 표면 살피기</small></div><div><span>02</span><strong>추론</strong><small>특징으로 암석 종류 짐작하기</small></div><div><span>03</span><strong>기록</strong><small>나만의 관찰 보고서 작성</small></div></div>
   </main>;
 }
 
