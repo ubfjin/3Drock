@@ -63,3 +63,5 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline-color:va
   .landing-copy{margin-left:clamp(20px,3vw,48px)}
 }
 @media(min-width:1000px){.landing-copy{margin-left:clamp(70px,8.5vw,110px)}}
+.view-under{position:relative}.source-disclosure{margin-left:auto;flex:none;align-self:center;font-size:10px;color:#766f67}.source-disclosure summary{cursor:pointer;white-space:nowrap;text-decoration:underline;text-underline-offset:3px}.source-disclosure p{position:absolute;right:18px;bottom:70px;max-width:260px;margin:0;padding:12px 15px;background:#fffdfb;border:1px solid var(--line);box-shadow:0 8px 20px #30251d24;color:var(--ink);font-size:11px;line-height:1.5;z-index:4}
+@media(max-width:600px){.view-under{padding-inline:16px;gap:8px}.view-under p{font-size:10px}.view-under-mark{font-size:22px}.source-disclosure{font-size:9px}}

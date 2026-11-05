@@ -20,7 +20,7 @@ function disposeModel(object) {
   for (const texture of textures) texture.dispose();
 }
 
-export default function Viewer({ url, sampleNo, credit }) {
+export default function Viewer({ url, sampleNo }) {
   const host = useRef(null);
   const runtime = useRef(null);
   const [loading, setLoading] = useState(true);
@@ -142,6 +142,5 @@ export default function Viewer({ url, sampleNo, credit }) {
     {loading && !error && <div className="viewer-message"><span className="loader-ring" />모델을 불러오는 중입니다…</div>}
     {error && <div className="viewer-message error">{error}</div>}
     <div className="viewer-bottom"><span>드래그 회전 · 스크롤 확대 · 우클릭 이동</span><div className="viewer-buttons"><button type="button" onClick={() => runtime.current?.model && runtime.current.frameModel(runtime.current.model)} aria-label="시점 초기화">시점 초기화</button><button type="button" onClick={() => host.current?.parentElement?.requestFullscreen?.()} aria-label="전체 화면">전체 화면</button></div></div>
-    {credit && <div className="viewer-credit">3D 자료: {credit}</div>}
   </div>;
 }
