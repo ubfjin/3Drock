@@ -97,7 +97,8 @@ create table if not exists public.model_details (
 
 insert into public.models (sample_no, asset_url, active, order_index, credit_public) values
   (1, '/models/sample-01.glb', true, 1, 'phaneritic · CC BY 4.0'),
-  (2, '/models/sample-02.glb', true, 2, 'rocksandminerals · CC BY 4.0')
+  (2, '/models/sample-02.glb', true, 2, 'rocksandminerals · CC BY 4.0'),
+  (3, '/models/sample-03.glb', true, 3, '')
 on conflict (sample_no) do nothing;
 insert into public.model_details (model_id, private_title)
 select id, '예시 시료 01'
@@ -106,6 +107,10 @@ on conflict (model_id) do nothing;
 insert into public.model_details (model_id, private_title)
 select id, '예시 시료 02'
 from public.models where sample_no = 2
+on conflict (model_id) do nothing;
+insert into public.model_details (model_id, private_title)
+select id, '시료 03 · web_1m_normal-map'
+from public.models where sample_no = 3
 on conflict (model_id) do nothing;
 
 create table if not exists public.questions (

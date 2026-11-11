@@ -13,15 +13,23 @@ export const defaultQuestions = [
 ];
 
 const demoKey = 'rocklab-classroom-demo-v1';
+const thirdDemoModel = { id: 'sample-03', sample_no: 3, order_index: 3, active: true, asset_url: '/models/sample-03.glb', credit_public: '', private_title: '시료 03 · web_1m_normal-map' };
 function demoData() {
   try {
     const saved = JSON.parse(localStorage.getItem(demoKey));
-    if (saved?.models?.length && saved?.questions?.length === 3) return saved;
+    if (saved?.models?.length && saved?.questions?.length === 3) {
+      if (!saved.models.some((model) => model.id === thirdDemoModel.id)) {
+        saved.models.push(thirdDemoModel);
+        localStorage.setItem(demoKey, JSON.stringify(saved));
+      }
+      return saved;
+    }
   } catch { /* reset invalid local preview */ }
   return {
     models: [
       { id: 'sample-01', sample_no: 1, order_index: 1, active: true, asset_url: '/models/sample-01.glb', credit_public: 'phaneritic · CC BY 4.0', private_title: '예시 시료 01' },
       { id: 'sample-02', sample_no: 2, order_index: 2, active: true, asset_url: '/models/sample-02.glb', credit_public: 'rocksandminerals · CC BY 4.0', private_title: '예시 시료 02' },
+      thirdDemoModel,
     ],
     questions: defaultQuestions.map((prompt, i) => ({ position: i + 1, prompt })),
     responses: {},
