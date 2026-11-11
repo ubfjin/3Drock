@@ -81,3 +81,9 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline-color:va
 .profile-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:24px}.profile-actions .primary-button{min-height:45px;padding:10px 16px}.profile-actions .outline-button{padding:10px 16px}
 .autosave-note{flex:none;margin:0;padding:9px 28px;border-bottom:1px solid var(--line);background:#f2ece5;color:#765746;font-size:11px;line-height:1.5}
 @media(max-width:700px){.header-profile{font-size:12px}.profile-card{padding:24px}.autosave-note{padding:9px 20px}}
+
+/* Keep the observation workspace compact after removing decorative labels. */
+.student-page .rail-top{padding-top:22px;padding-bottom:16px}
+.student-page .rail-top h2{margin-top:0}
+.student-page .report-head{padding-top:20px;padding-bottom:17px;align-items:center}
+.student-page .report-head h2{margin-top:0}
