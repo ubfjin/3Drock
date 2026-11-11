@@ -72,3 +72,12 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline-color:va
 .landing h1 .headline-line{display:block;white-space:nowrap}
 @media(min-width:701px){.landing h1{font-size:clamp(44px,4.5vw,72px)}}
 @media(max-width:700px){.landing h1{font-size:clamp(38px,8vw,50px)}}
+
+.header-profile{border:0;background:none;color:var(--ink);font-size:14px;padding:8px 0;text-decoration:underline;text-underline-offset:4px}.header-profile:hover{color:var(--accent)}
+.profile-backdrop{position:fixed;inset:0;z-index:30;display:grid;place-items:center;padding:20px;background:#1d1c1a90}
+.profile-card{width:min(460px,100%);max-height:calc(100dvh - 40px);overflow:auto;background:var(--paper);border:1px solid var(--line);padding:32px;box-shadow:0 24px 70px #1d1c1a40}
+.profile-card h2{font-family:Manrope,sans-serif;font-size:28px;margin:9px 0}.profile-card>p{color:var(--muted);font-size:13px;line-height:1.65;margin:0 0 22px}
+.profile-card label{display:block;font-size:13px;font-weight:700;margin:15px 0;color:var(--ink)}.profile-card input{display:block;width:100%;border:1px solid #cfc7bd;background:#fffdfb;padding:12px;margin-top:7px;color:var(--ink)}
+.profile-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:24px}.profile-actions .primary-button{min-height:45px;padding:10px 16px}.profile-actions .outline-button{padding:10px 16px}
+.autosave-note{flex:none;margin:0;padding:9px 28px;border-bottom:1px solid var(--line);background:#f2ece5;color:#765746;font-size:11px;line-height:1.5}
+@media(max-width:700px){.header-profile{font-size:12px}.profile-card{padding:24px}.autosave-note{padding:9px 20px}}

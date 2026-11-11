@@ -86,6 +86,26 @@ export async function signOut() {
   else check(await supabase.auth.signOut());
 }
 
+export async function loadStudentProfile(userId) {
+  if (demoMode) return demoData().studentProfile || { id: userId, email: 'student@example.com', display_name: '', student_number: '', department: '' };
+  return check(await supabase.from('profiles').select('*').eq('id', userId).maybeSingle());
+}
+
+export async function saveStudentProfile(userId, fields) {
+  const profile = {
+    student_number: fields.student_number.trim(),
+    department: fields.department.trim(),
+    display_name: fields.display_name.trim(),
+  };
+  if (demoMode) {
+    const saved = demoData();
+    saved.studentProfile = { id: userId, email: 'student@example.com', ...profile };
+    writeDemo(saved);
+    return saved.studentProfile;
+  }
+  return check(await supabase.from('profiles').update(profile).eq('id', userId).select('*').single());
+}
+
 export async function loadClassroom(role, userId) {
   if (demoMode) {
     const saved = demoData();
@@ -94,7 +114,7 @@ export async function loadClassroom(role, userId) {
       models: [...saved.models].filter((m) => role === 'teacher' || m.active).sort((a, b) => a.order_index - b.order_index),
       questions: [...saved.questions].sort((a, b) => a.position - b.position),
       responses: role === 'student' ? Object.values(saved.responses).filter((r) => r.user_id === userId) : Object.values(saved.responses),
-      profiles: role === 'teacher' ? [{ id: 'demo-student', email: 'student@example.com', display_name: '미리보기 학생' }] : [],
+      profiles: role === 'teacher' ? [saved.studentProfile || { id: 'demo-student', email: 'student@example.com', display_name: '미리보기 학생' }] : [],
       settings,
       grades: role === 'teacher' || settings.grades_released ? Object.values(saved.grades || {}).filter((g) => role === 'teacher' || g.user_id === userId) : [],
     };

@@ -59,6 +59,8 @@ create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   email text not null,
   display_name text,
+  student_number text,
+  department text,
   created_at timestamptz not null default now()
 );
 
@@ -148,6 +150,7 @@ alter table public.responses enable row level security;
 
 revoke all on public.teacher_access, public.teacher_sessions, public.teacher_attempts, public.profiles, public.models, public.model_details, public.questions, public.responses from anon, authenticated;
 grant select on public.profiles, public.models, public.model_details, public.questions, public.responses to authenticated;
+grant update (student_number, department, display_name) on public.profiles to authenticated;
 grant insert, update on public.models, public.model_details, public.questions to authenticated;
 grant insert (user_id, model_id, draft_answers, updated_at) on public.responses to authenticated;
 grant update (draft_answers, updated_at) on public.responses to authenticated;
@@ -156,6 +159,9 @@ grant execute on function public.is_teacher() to authenticated;
 
 create policy "profiles read own or teacher" on public.profiles for select to authenticated
 using (id = (select auth.uid()) or public.is_teacher());
+create policy "students update own profile" on public.profiles for update to authenticated
+using (id = (select auth.uid()) and coalesce((auth.jwt() ->> 'is_anonymous')::boolean, false) is false)
+with check (id = (select auth.uid()) and coalesce((auth.jwt() ->> 'is_anonymous')::boolean, false) is false);
 create policy "models read active or teacher" on public.models for select to authenticated
 using ((active and coalesce((auth.jwt() ->> 'is_anonymous')::boolean, false) is false) or public.is_teacher());
 create policy "models teacher insert" on public.models for insert to authenticated

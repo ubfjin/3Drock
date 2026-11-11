@@ -20,6 +20,29 @@ function disposeModel(object) {
   for (const texture of textures) texture.dispose();
 }
 
+function visualBounds(object) {
+  const axes = [[], [], []];
+  const point = new THREE.Vector3();
+  object.updateWorldMatrix(true, true);
+  object.traverse((child) => {
+    if (!child.isMesh) return;
+    const positions = child.geometry?.getAttribute('position');
+    if (!positions?.count) return;
+    const stride = Math.max(1, Math.ceil(positions.count / 12000));
+    for (let i = 0; i < positions.count; i += stride) {
+      point.fromBufferAttribute(positions, i).applyMatrix4(child.matrixWorld);
+      if (Number.isFinite(point.x) && Number.isFinite(point.y) && Number.isFinite(point.z)) {
+        axes[0].push(point.x); axes[1].push(point.y); axes[2].push(point.z);
+      }
+    }
+  });
+  if (axes[0].length < 30) return new THREE.Box3().setFromObject(object);
+  axes.forEach((axis) => axis.sort((a, b) => a - b));
+  const low = axes.map((axis) => axis[Math.floor((axis.length - 1) * 0.02)]);
+  const high = axes.map((axis) => axis[Math.ceil((axis.length - 1) * 0.98)]);
+  return new THREE.Box3(new THREE.Vector3(...low), new THREE.Vector3(...high));
+}
+
 export default function Viewer({ url, sampleNo }) {
   const host = useRef(null);
   const runtime = useRef(null);
@@ -76,7 +99,7 @@ export default function Viewer({ url, sampleNo }) {
     const animate = () => { frame = requestAnimationFrame(animate); controls.update(); renderer.render(scene, camera); };
     animate();
     runtime.current = { scene, camera, controls, renderer, floor, key, environment, pmrem, frameModel(object) {
-      const bounds = new THREE.Box3().setFromObject(object);
+      const bounds = visualBounds(object);
       const center = bounds.getCenter(new THREE.Vector3());
       const size = bounds.getSize(new THREE.Vector3());
       const radius = Math.max(size.length() * 0.5, 0.01);
@@ -91,7 +114,7 @@ export default function Viewer({ url, sampleNo }) {
       controls.minDistance = radius * 0.12;
       controls.maxDistance = radius * 30;
       controls.update();
-      floor.position.y = bounds.min.y - radius * 0.035;
+      floor.position.y = new THREE.Box3().setFromObject(object).min.y - radius * 0.035;
       key.position.copy(center).add(new THREE.Vector3(3, 5, 4).multiplyScalar(radius * 3));
       key.target.position.copy(center);
     } };
