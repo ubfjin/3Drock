@@ -20,7 +20,7 @@ function disposeModel(object) {
   for (const texture of textures) texture.dispose();
 }
 
-export default function Viewer({ url, sampleNo }) {
+export default function Viewer({ url, sampleNo, credit, onPrevious, onNext }) {
   const host = useRef(null);
   const runtime = useRef(null);
   const [loading, setLoading] = useState(true);
@@ -139,9 +139,9 @@ export default function Viewer({ url, sampleNo }) {
 
   return <div className="viewer-shell">
     <div className="viewer-canvas" ref={host} />
-    <div className="viewer-top"><span className="viewer-badge">3D OBSERVATION</span><span className="viewer-counter">시료 {String(sampleNo).padStart(2, '0')}</span></div>
+    <div className="viewer-top"><div className="viewer-sample-pill"><strong>시료 {String(sampleNo).padStart(2, '0')}</strong>{credit && <><span className="viewer-pill-divider" /><details className="viewer-credit-popover"><summary aria-label="자료 출처" title="자료 출처">ⓘ</summary><div><b>자료 출처</b><span>{credit}</span></div></details></>}</div><div className="viewer-nav-pill"><button type="button" onClick={onPrevious} aria-label="이전 시료">← 이전</button><button type="button" onClick={onNext} aria-label="다음 시료">다음 →</button></div></div>
     {loading && !error && <div className="viewer-message"><span className="loader-ring" />모델을 불러오는 중입니다…</div>}
     {error && <div className="viewer-message error">{error}</div>}
-    <div className="viewer-bottom"><span>드래그 회전 · 스크롤 확대 · 우클릭 이동</span><div className="viewer-buttons"><button type="button" onClick={() => runtime.current?.model && runtime.current.frameModel(runtime.current.model)} aria-label="시점 초기화">시점 초기화</button><button type="button" onClick={() => host.current?.parentElement?.requestFullscreen?.()} aria-label="전체 화면">전체 화면</button></div></div>
+    <div className="viewer-bottom"><div className="viewer-controls-pill"><button type="button" onClick={() => runtime.current?.model && runtime.current.frameModel(runtime.current.model)} aria-label="시점 초기화">시점 초기화</button><button type="button" onClick={() => host.current?.parentElement?.requestFullscreen?.()} aria-label="전체 화면">전체 화면</button><span className="viewer-pill-divider" /><span>드래그 회전 · 스크롤 확대 · 우클릭 이동</span></div></div>
   </div>;
 }

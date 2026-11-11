@@ -42,6 +42,7 @@ export default function App() {
   const [profile, setProfile] = useState(null);
   const [profileOpen, setProfileOpen] = useState(false);
   const [profileLoading, setProfileLoading] = useState(false);
+  const [studentSaveState, setStudentSaveState] = useState('저장 완료');
   useEffect(() => { currentIdentity().then(setIdentity).catch((e) => setError(e.message || '로그인 상태를 확인하지 못했습니다.')).finally(() => setBusy(false)); }, []);
   useEffect(() => {
     if (identity?.role !== 'student') { setProfile(null); setProfileOpen(false); return; }
@@ -87,10 +88,10 @@ export default function App() {
   };
   const profileRequired = !!profile && 'student_number' in profile && (!profile.student_number || !profile.department || !profile.display_name);
   const saveProfile = async (fields) => { const next = await saveStudentProfile(identity.user.id, fields); setProfile(next); setProfileOpen(false); if (data && screen === 'teacher') await refresh(); };
-  return <div className="app"><header className="site-header"><button className="header-logo" onClick={() => setScreen('home')}><Logo /></button><div className="header-right">{identity ? <>{identity.role === 'student' && profile && 'student_number' in profile && <button className="header-profile" onClick={() => setProfileOpen(true)}>내 정보</button>}<span className="header-user">{identity.role === 'teacher' ? '교사' : profile?.display_name || identity.user?.user_metadata?.full_name || '학생'}</span><button className="header-logout" onClick={logout}>로그아웃</button></> : screen === 'home' && <><button className="header-teacher" onClick={() => setTeacherOpen(!teacherOpen)}>교사 화면</button><button className="header-login" disabled={busy} onClick={studentLogin}>로그인</button></>}</div></header>
+  return <div className={`app ${screen === 'student' ? 'student-active' : ''}`}><header className={`site-header ${screen === 'student' ? 'student-header' : ''}`}><div className="header-brand"><button className="header-logo" onClick={() => setScreen('home')}><Logo /></button>{screen === 'student' && <div className="header-activity"><strong>암석 관찰 활동</strong><span>시료를 자유롭게 오가며 관찰하세요.</span></div>}</div><div className="header-right">{identity ? <>{screen === 'student' && <span className={`header-save ${studentSaveState === '저장 실패' ? 'failed' : ''}`} role="status">{studentSaveState === '저장 중…' ? '◌ 저장 중…' : studentSaveState === '저장 실패' ? '● 저장 실패' : '✓ 저장 완료'}</span>}{identity.role === 'student' && profile && 'student_number' in profile && <button className="header-profile" onClick={() => setProfileOpen(true)}>내 정보</button>}<span className="header-user">{identity.role === 'teacher' ? '교사' : `${profile?.display_name || identity.user?.user_metadata?.full_name || '학생'} 님`}</span><button className="header-logout" onClick={logout}>로그아웃</button></> : screen === 'home' && <><button className="header-teacher" onClick={() => setTeacherOpen(!teacherOpen)}>교사 화면</button><button className="header-login" disabled={busy} onClick={studentLogin}>로그인</button></>}</div></header>
     {screen === 'home' && <Landing identity={identity} busy={busy} error={error} onStudent={studentLogin} onTeacher={teacherLogin} onStart={() => start()} teacherOpen={teacherOpen} />}
     <Suspense fallback={<div className="loading-page">학습 공간을 준비하는 중입니다…</div>}>
-      {screen === 'student' && data && <Student identity={identity} data={data} onRefresh={() => refresh()} onHome={() => setScreen('home')} />}
+      {screen === 'student' && data && <Student identity={identity} data={data} onRefresh={() => refresh()} onHome={() => setScreen('home')} onSaveStateChange={setStudentSaveState} />}
       {screen === 'teacher' && data && <Teacher data={data} onRefresh={() => refresh()} />}
     </Suspense>
     {identity?.role === 'student' && profileOpen && profile && 'student_number' in profile && <ProfileForm key={identity.user.id} profile={profile} user={identity.user} onSave={saveProfile} onClose={profileRequired ? null : () => setProfileOpen(false)} />}
