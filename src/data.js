@@ -146,6 +146,16 @@ export function modelUrl(model) {
   return supabase.storage.from('rock-models').getPublicUrl(model.storage_path).data.publicUrl;
 }
 
+export async function saveOriginalModelUrl(modelId, originalUrl) {
+  if (demoMode) {
+    const saved = demoData();
+    saved.models = saved.models.map((model) => model.id === modelId ? { ...model, original_asset_url: originalUrl || null } : model);
+    writeDemo(saved);
+    return;
+  }
+  check(await supabase.from('models').update({ original_asset_url: originalUrl || null }).eq('id', modelId));
+}
+
 export async function saveDraft(userId, modelId, answers) {
   const payload = { user_id: userId, model_id: modelId, draft_answers: answers, updated_at: new Date().toISOString() };
   if (demoMode) {

@@ -108,7 +108,7 @@ export default function Student({ identity, data, onRefresh, onHome, onSaveState
     </aside>
 
     <section className="student-view" aria-label="3D 암석 관찰">
-      <Viewer key={selectedModel.id} url={modelUrl(selectedModel)} sampleNo={selected + 1} credit={selectedModel.credit_public} onPrevious={() => selectModel((selected - 1 + models.length) % models.length)} onNext={() => selectModel((selected + 1) % models.length)} />
+      <Viewer key={selectedModel.id} url={modelUrl(selectedModel)} originalUrl={selectedModel.original_asset_url} sampleNo={selected + 1} credit={selectedModel.credit_public} onPrevious={() => selectModel((selected - 1 + models.length) % models.length)} onNext={() => selectModel((selected + 1) % models.length)} />
     </section>
 
     <section className="report-panel" aria-label="관찰 보고서">

@@ -83,6 +83,7 @@ create table if not exists public.models (
   sample_no integer not null unique,
   storage_path text unique,
   asset_url text,
+  original_asset_url text,
   active boolean not null default true,
   order_index integer not null default 0,
   credit_public text not null default '',

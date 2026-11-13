@@ -20,11 +20,12 @@ function disposeModel(object) {
   for (const texture of textures) texture.dispose();
 }
 
-export default function Viewer({ url, sampleNo, credit, onPrevious, onNext }) {
+export default function Viewer({ url, originalUrl, sampleNo, credit, onPrevious, onNext }) {
   const host = useRef(null);
   const runtime = useRef(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [quality, setQuality] = useState('');
 
   useEffect(() => {
     const element = host.current;
@@ -113,8 +114,10 @@ export default function Viewer({ url, sampleNo, credit, onPrevious, onNext }) {
     const rt = runtime.current;
     if (!rt || !url) return;
     let cancelled = false;
+    const originalController = new AbortController();
     setLoading(true);
     setError('');
+    setQuality('');
     if (rt.model) {
       rt.scene.remove(rt.model);
       disposeModel(rt.model);
@@ -124,24 +127,50 @@ export default function Viewer({ url, sampleNo, credit, onPrevious, onNext }) {
     draco.setDecoderPath('/draco/');
     const loader = new GLTFLoader();
     loader.setDRACOLoader(draco);
+    const showOriginal = async () => {
+      if (!originalUrl || originalUrl === url || cancelled) return;
+      setQuality('원본 화질 불러오는 중');
+      try {
+        const response = await fetch(originalUrl, { signal: originalController.signal });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const bytes = await response.arrayBuffer();
+        if (cancelled) return;
+        const basePath = new URL('.', new URL(originalUrl, window.location.href)).href;
+        const gltf = await loader.parseAsync(bytes, basePath);
+        if (cancelled) { disposeModel(gltf.scene); return; }
+        const object = gltf.scene;
+        if (new THREE.Box3().setFromObject(object).isEmpty()) { disposeModel(object); throw new Error('Empty model'); }
+        object.traverse((child) => { if (child.isMesh) child.castShadow = true; });
+        const previous = rt.model;
+        rt.scene.add(object);
+        rt.model = object;
+        rt.frameModel(object);
+        if (previous) { rt.scene.remove(previous); disposeModel(previous); }
+        setQuality('원본 화질');
+      } catch (cause) {
+        if (!cancelled && cause.name !== 'AbortError') setQuality('기본 화질 · 원본 연결 확인 필요');
+      }
+    };
     loader.load(url, (gltf) => {
       if (cancelled) { disposeModel(gltf.scene); return; }
       const object = gltf.scene;
-      if (new THREE.Box3().setFromObject(object).isEmpty()) { setError('표시할 형상이 없는 모델입니다.'); setLoading(false); return; }
+      if (new THREE.Box3().setFromObject(object).isEmpty()) { disposeModel(object); setError('표시할 형상이 없는 모델입니다.'); setLoading(false); return; }
       object.traverse((child) => { if (child.isMesh) child.castShadow = true; });
       rt.scene.add(object);
       rt.model = object;
       rt.frameModel(object);
       setLoading(false);
+      showOriginal();
     }, undefined, () => { if (!cancelled) { setError('모델을 불러오지 못했습니다.'); setLoading(false); } });
-    return () => { cancelled = true; draco.dispose(); };
-  }, [url]);
+    return () => { cancelled = true; originalController.abort(); draco.dispose(); };
+  }, [url, originalUrl]);
 
   return <div className="viewer-shell">
     <div className="viewer-canvas" ref={host} />
     <div className="viewer-top"><div className="viewer-sample-pill"><strong>시료 {String(sampleNo).padStart(2, '0')}</strong>{credit && <><span className="viewer-pill-divider" /><details className="viewer-credit-popover"><summary aria-label="자료 출처" title="자료 출처">ⓘ</summary><div><b>자료 출처</b><span>{credit}</span></div></details></>}</div><div className="viewer-nav-pill"><button type="button" onClick={onPrevious} aria-label="이전 시료">← 이전</button><button type="button" onClick={onNext} aria-label="다음 시료">다음 →</button></div></div>
     {loading && !error && <div className="viewer-message"><span className="loader-ring" />모델을 불러오는 중입니다…</div>}
     {error && <div className="viewer-message error">{error}</div>}
+    {quality && !error && <div className="viewer-quality" role="status">{quality}</div>}
     <div className="viewer-bottom"><div className="viewer-controls-pill"><button type="button" onClick={() => runtime.current?.model && runtime.current.frameModel(runtime.current.model)} aria-label="시점 초기화">시점 초기화</button><button type="button" onClick={() => host.current?.parentElement?.requestFullscreen?.()} aria-label="전체 화면">전체 화면</button><span className="viewer-pill-divider" /><span>드래그 회전 · 스크롤 확대 · 우클릭 이동</span></div></div>
   </div>;
 }
