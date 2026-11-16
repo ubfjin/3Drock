@@ -102,7 +102,9 @@ insert into public.models (sample_no, asset_url, active, order_index, credit_pub
   (1, '/models/sample-01.glb', true, 1, 'phaneritic · CC BY 4.0'),
   (2, '/models/sample-02.glb', true, 2, 'rocksandminerals · CC BY 4.0'),
   (3, '/models/sample-03.glb', true, 3, ''),
-  (4, '/models/sample-04.glb', true, 4, '')
+  (4, '/models/sample-04.glb', true, 4, ''),
+  (5, '/models/sample-05.glb', true, 5, ''),
+  (6, '/models/sample-06.glb', true, 6, '')
 on conflict (sample_no) do nothing;
 insert into public.model_details (model_id, private_title)
 select id, '예시 시료 01'
@@ -119,6 +121,14 @@ on conflict (model_id) do nothing;
 insert into public.model_details (model_id, private_title)
 select id, '시료 04 · pyo-sample_g_web1M'
 from public.models where sample_no = 4
+on conflict (model_id) do nothing;
+insert into public.model_details (model_id, private_title)
+select id, '시료 05 · amy_g_261023_Web 1000k_261024_0139'
+from public.models where sample_no = 5
+on conflict (model_id) do nothing;
+insert into public.model_details (model_id, private_title)
+select id, '시료 06 · pyo-sampel_b-web'
+from public.models where sample_no = 6
 on conflict (model_id) do nothing;
 
 create table if not exists public.questions (
