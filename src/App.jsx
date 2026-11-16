@@ -1,9 +1,18 @@
 import React, { Suspense, lazy, useEffect, useState } from 'react';
 import { currentIdentity, demoMode, googleSignIn, loadClassroom, loadPublicModels, loadStudentProfile, previewSignIn, saveStudentProfile, signOut, teacherSignIn } from './data.js';
+import Teacher from './Teacher.jsx';
 
 const Student = lazy(() => import('./Student.jsx'));
-const Teacher = lazy(() => import('./Teacher.jsx'));
 const Guest = lazy(() => import('./Guest.jsx'));
+
+class WorkspaceBoundary extends React.Component {
+  constructor(props) { super(props); this.state = { failed: false }; }
+  static getDerivedStateFromError() { return { failed: true }; }
+  render() {
+    if (this.state.failed) return <div className="empty-page" role="alert"><h2>화면을 표시하지 못했습니다.</h2><p>잠시 후 다시 열어 주세요.</p><button onClick={() => { this.setState({ failed: false }); this.props.onHome(); }}>홈으로 돌아가기</button></div>;
+    return this.props.children;
+  }
+}
 
 function Logo() { return <span className="logo"><span className="logo-stone">◆</span> ROCK<span>LAB</span></span>; }
 
@@ -111,11 +120,11 @@ export default function App() {
   const saveProfile = async (fields) => { const next = await saveStudentProfile(identity.user.id, fields); setProfile(next); setProfileOpen(false); if (data && screen === 'teacher') await refresh(); };
   return <div className={`app ${screen === 'student' ? 'student-active' : screen === 'guest' ? 'guest-active' : ''}`}><header className={`site-header ${screen === 'student' ? 'student-header' : ''}`}><div className="header-brand"><button className="header-logo" onClick={() => setScreen('home')}><Logo /></button>{screen === 'student' && <div className="header-activity"><strong>암석 관찰 활동</strong><span>시료를 자유롭게 오가며 관찰하세요.</span></div>}{screen === 'guest' && <span className="guest-header-label">로그인 없이 관찰</span>}</div><div className="header-right">{identity ? <>{screen === 'student' && <><SaveCloud state={studentSaveState} /><span className="header-save-divider" aria-hidden="true" /></>}{identity.role === 'student' && profile && 'student_number' in profile ? <button className="header-user header-user-button" onClick={() => setProfileOpen(true)} title="학생 정보 수정">{profile?.display_name || identity.user?.user_metadata?.full_name || '학생'} 님</button> : <span className="header-user">{identity.role === 'teacher' ? '교사' : `${profile?.display_name || identity.user?.user_metadata?.full_name || '학생'} 님`}</span>}<button className="header-logout" onClick={logout}>로그아웃</button></> : screen === 'home' ? <><button className="header-teacher" onClick={() => setTeacherOpen(!teacherOpen)}>교사 화면</button><button className="header-login" disabled={busy} onClick={studentLogin}>로그인</button></> : <><button className="header-teacher" onClick={() => setScreen('home')}>홈으로</button><button className="header-login" disabled={busy} onClick={studentLogin}>로그인</button></>}</div></header>
     {screen === 'home' && <Landing identity={identity} busy={busy} error={error} onStudent={studentLogin} onTeacher={teacherLogin} onStart={() => start()} onGuest={startGuest} teacherOpen={teacherOpen} />}
-    <Suspense fallback={<div className="loading-page">학습 공간을 준비하는 중입니다…</div>}>
+    <WorkspaceBoundary onHome={() => { setScreen('home'); setData(null); }}><Suspense fallback={<div className="loading-page">학습 공간을 준비하는 중입니다…</div>}>
       {screen === 'student' && data && <Student identity={identity} data={data} onRefresh={() => refresh()} onHome={() => setScreen('home')} onSaveStateChange={setStudentSaveState} />}
       {screen === 'teacher' && data && <Teacher data={data} onRefresh={() => refresh()} />}
       {screen === 'guest' && <Guest models={publicModels} onHome={() => setScreen('home')} onLogin={studentLogin} />}
-    </Suspense>
+    </Suspense></WorkspaceBoundary>
     {identity?.role === 'student' && profileOpen && profile && 'student_number' in profile && <ProfileForm key={identity.user.id} profile={profile} user={identity.user} onSave={saveProfile} onClose={profileRequired ? null : () => setProfileOpen(false)} />}
   </div>;
 }
