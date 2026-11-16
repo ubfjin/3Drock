@@ -13,6 +13,7 @@ export const defaultQuestions = [
 ];
 
 const demoKey = 'rocklab-classroom-demo-v1';
+const secondDemoModel = { id: 'sample-02', sample_no: 2, order_index: 2, active: true, asset_url: '/models/sample-02-v2.glb', credit_public: '', private_title: '시료 02 · black_schist_spain' };
 const thirdDemoModel = { id: 'sample-03', sample_no: 3, order_index: 3, active: true, asset_url: '/models/sample-03.glb', credit_public: '', private_title: '시료 03 · web_1m_normal-map' };
 const fourthDemoModel = { id: 'sample-04', sample_no: 4, order_index: 4, active: true, asset_url: '/models/sample-04.glb', credit_public: '', private_title: '시료 04 · pyo-sample_g_web1M' };
 const fifthDemoModel = { id: 'sample-05', sample_no: 5, order_index: 5, active: true, asset_url: '/models/sample-05.glb', credit_public: '', private_title: '시료 05 · amy_g_261023_Web 1000k_261024_0139' };
@@ -22,6 +23,11 @@ function demoData() {
   try {
     const saved = JSON.parse(localStorage.getItem(demoKey));
     if (saved?.models?.length && saved?.questions?.length === 3) {
+      const second = saved.models.find((model) => model.id === secondDemoModel.id);
+      if (second && (second.asset_url !== secondDemoModel.asset_url || second.credit_public || second.private_title !== secondDemoModel.private_title || second.original_asset_url)) {
+        Object.assign(second, { asset_url: secondDemoModel.asset_url, credit_public: '', private_title: secondDemoModel.private_title, original_asset_url: null });
+        localStorage.setItem(demoKey, JSON.stringify(saved));
+      }
       if (extraDemoModels.some((model) => !saved.models.some((existing) => existing.id === model.id))) {
         for (const model of extraDemoModels) if (!saved.models.some((existing) => existing.id === model.id)) saved.models.push(model);
         localStorage.setItem(demoKey, JSON.stringify(saved));
@@ -32,7 +38,7 @@ function demoData() {
   return {
     models: [
       { id: 'sample-01', sample_no: 1, order_index: 1, active: true, asset_url: '/models/sample-01.glb', credit_public: 'phaneritic · CC BY 4.0', private_title: '예시 시료 01' },
-      { id: 'sample-02', sample_no: 2, order_index: 2, active: true, asset_url: '/models/sample-02.glb', credit_public: 'rocksandminerals · CC BY 4.0', private_title: '예시 시료 02' },
+      secondDemoModel,
       thirdDemoModel,
       fourthDemoModel,
       fifthDemoModel,
