@@ -149,6 +149,14 @@ export function modelUrl(model) {
   return supabase.storage.from('rock-models').getPublicUrl(model.storage_path).data.publicUrl;
 }
 
+export async function loadPublicModels() {
+  if (demoMode) return [...demoData().models]
+    .filter((model) => model.active)
+    .sort((a, b) => a.order_index - b.order_index)
+    .map(({ sample_no, asset_url, storage_path, order_index }) => ({ sample_no, asset_url, storage_path, order_index }));
+  return check(await supabase.rpc('public_observation_models'));
+}
+
 export async function saveOriginalModelUrl(modelId, originalUrl) {
   if (demoMode) {
     const saved = demoData();

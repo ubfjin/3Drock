@@ -1,8 +1,9 @@
 import React, { Suspense, lazy, useEffect, useState } from 'react';
-import { currentIdentity, demoMode, googleSignIn, loadClassroom, loadStudentProfile, previewSignIn, saveStudentProfile, signOut, teacherSignIn } from './data.js';
+import { currentIdentity, demoMode, googleSignIn, loadClassroom, loadPublicModels, loadStudentProfile, previewSignIn, saveStudentProfile, signOut, teacherSignIn } from './data.js';
 
 const Student = lazy(() => import('./Student.jsx'));
 const Teacher = lazy(() => import('./Teacher.jsx'));
+const Guest = lazy(() => import('./Guest.jsx'));
 
 function Logo() { return <span className="logo"><span className="logo-stone">◆</span> ROCK<span>LAB</span></span>; }
 
@@ -18,11 +19,12 @@ function SaveCloud({ state }) {
   </span>;
 }
 
-function Landing({ identity, busy, error, onStudent, onTeacher, onStart, teacherOpen }) {
+function Landing({ identity, busy, error, onStudent, onTeacher, onStart, onGuest, teacherOpen }) {
   const [code, setCode] = useState('');
   return <main className="landing">
     <section className="landing-hero"><div className="landing-hero-inner"><div className="landing-copy"><div className="overline">INTERACTIVE EARTH SCIENCE</div><h1><span className="headline-line">3D 암석 관찰과</span><span className="headline-line">탐구 <em>기록</em></span></h1><p>암석을 돌려 보고, 가까이 들여다보고,<br />관찰한 생각을 나만의 보고서로 남겨보세요.</p></div><div className="landing-art"><img src="/rock-hero.png" alt="어두운 회색 암석 시료" /></div></div></section>
     <section className="landing-entry"><button className="primary-button" disabled={busy} onClick={identity ? onStart : onStudent}>{identity?.role === 'teacher' ? '교사 대시보드 열기' : '활동 시작하기'} <span>→</span></button>
+      {!identity && <button className="guest-entry-button" disabled={busy} onClick={onGuest}>로그인 없이 암석 관찰 <span>→</span></button>}
       {teacherOpen && !identity && <form className="teacher-login" onSubmit={(e) => { e.preventDefault(); onTeacher(code); }}><label htmlFor="teacher-code">교사 접근 코드</label><div><input id="teacher-code" type="password" value={code} onChange={(e) => setCode(e.target.value)} placeholder="접근 코드를 입력하세요" autoComplete="off" disabled={busy} /><button type="submit" disabled={busy || !code.trim()}>입장 →</button></div></form>}
       {error && <p className="notice error" role="alert">{error}</p>}{demoMode && <p className="demo-note">미리보기 모드 · 작성 내용은 이 브라우저에만 저장됩니다.</p>}</section>
     <footer className="landing-footer">© ubfjin@snu.ac.kr <span>© 2026 RockLab</span></footer>
@@ -48,6 +50,7 @@ export default function App() {
   const [identity, setIdentity] = useState(null);
   const [screen, setScreen] = useState('home');
   const [data, setData] = useState(null);
+  const [publicModels, setPublicModels] = useState([]);
   const [busy, setBusy] = useState(true);
   const [error, setError] = useState('');
   const [teacherOpen, setTeacherOpen] = useState(false);
@@ -82,8 +85,14 @@ export default function App() {
   };
   const studentLogin = async () => {
     setBusy(true); setError('');
-    try { const who = demoMode ? await previewSignIn('student') : await googleSignIn(); if (who) setIdentity(who); }
+    try { const who = demoMode ? await previewSignIn('student') : await googleSignIn(); if (who) { setIdentity(who); if (screen === 'guest') setScreen('home'); } }
     catch (e) { setError(e.message || '로그인하지 못했습니다.'); }
+    finally { setBusy(false); }
+  };
+  const startGuest = async () => {
+    setBusy(true); setError('');
+    try { setPublicModels(await loadPublicModels()); setScreen('guest'); }
+    catch (e) { setError(`공개 시료를 불러오지 못했습니다. ${e.message || ''}`); }
     finally { setBusy(false); }
   };
   const teacherLogin = async (code) => {
@@ -100,11 +109,12 @@ export default function App() {
   };
   const profileRequired = !!profile && 'student_number' in profile && (!profile.student_number || !profile.department || !profile.display_name);
   const saveProfile = async (fields) => { const next = await saveStudentProfile(identity.user.id, fields); setProfile(next); setProfileOpen(false); if (data && screen === 'teacher') await refresh(); };
-  return <div className={`app ${screen === 'student' ? 'student-active' : ''}`}><header className={`site-header ${screen === 'student' ? 'student-header' : ''}`}><div className="header-brand"><button className="header-logo" onClick={() => setScreen('home')}><Logo /></button>{screen === 'student' && <div className="header-activity"><strong>암석 관찰 활동</strong><span>시료를 자유롭게 오가며 관찰하세요.</span></div>}</div><div className="header-right">{identity ? <>{screen === 'student' && <><SaveCloud state={studentSaveState} /><span className="header-save-divider" aria-hidden="true" /></>}{identity.role === 'student' && profile && 'student_number' in profile ? <button className="header-user header-user-button" onClick={() => setProfileOpen(true)} title="학생 정보 수정">{profile?.display_name || identity.user?.user_metadata?.full_name || '학생'} 님</button> : <span className="header-user">{identity.role === 'teacher' ? '교사' : `${profile?.display_name || identity.user?.user_metadata?.full_name || '학생'} 님`}</span>}<button className="header-logout" onClick={logout}>로그아웃</button></> : screen === 'home' && <><button className="header-teacher" onClick={() => setTeacherOpen(!teacherOpen)}>교사 화면</button><button className="header-login" disabled={busy} onClick={studentLogin}>로그인</button></>}</div></header>
-    {screen === 'home' && <Landing identity={identity} busy={busy} error={error} onStudent={studentLogin} onTeacher={teacherLogin} onStart={() => start()} teacherOpen={teacherOpen} />}
+  return <div className={`app ${screen === 'student' ? 'student-active' : screen === 'guest' ? 'guest-active' : ''}`}><header className={`site-header ${screen === 'student' ? 'student-header' : ''}`}><div className="header-brand"><button className="header-logo" onClick={() => setScreen('home')}><Logo /></button>{screen === 'student' && <div className="header-activity"><strong>암석 관찰 활동</strong><span>시료를 자유롭게 오가며 관찰하세요.</span></div>}{screen === 'guest' && <span className="guest-header-label">로그인 없이 관찰</span>}</div><div className="header-right">{identity ? <>{screen === 'student' && <><SaveCloud state={studentSaveState} /><span className="header-save-divider" aria-hidden="true" /></>}{identity.role === 'student' && profile && 'student_number' in profile ? <button className="header-user header-user-button" onClick={() => setProfileOpen(true)} title="학생 정보 수정">{profile?.display_name || identity.user?.user_metadata?.full_name || '학생'} 님</button> : <span className="header-user">{identity.role === 'teacher' ? '교사' : `${profile?.display_name || identity.user?.user_metadata?.full_name || '학생'} 님`}</span>}<button className="header-logout" onClick={logout}>로그아웃</button></> : screen === 'home' ? <><button className="header-teacher" onClick={() => setTeacherOpen(!teacherOpen)}>교사 화면</button><button className="header-login" disabled={busy} onClick={studentLogin}>로그인</button></> : <><button className="header-teacher" onClick={() => setScreen('home')}>홈으로</button><button className="header-login" disabled={busy} onClick={studentLogin}>로그인</button></>}</div></header>
+    {screen === 'home' && <Landing identity={identity} busy={busy} error={error} onStudent={studentLogin} onTeacher={teacherLogin} onStart={() => start()} onGuest={startGuest} teacherOpen={teacherOpen} />}
     <Suspense fallback={<div className="loading-page">학습 공간을 준비하는 중입니다…</div>}>
       {screen === 'student' && data && <Student identity={identity} data={data} onRefresh={() => refresh()} onHome={() => setScreen('home')} onSaveStateChange={setStudentSaveState} />}
       {screen === 'teacher' && data && <Teacher data={data} onRefresh={() => refresh()} />}
+      {screen === 'guest' && <Guest models={publicModels} onHome={() => setScreen('home')} onLogin={studentLogin} />}
     </Suspense>
     {identity?.role === 'student' && profileOpen && profile && 'student_number' in profile && <ProfileForm key={identity.user.id} profile={profile} user={identity.user} onSave={saveProfile} onClose={profileRequired ? null : () => setProfileOpen(false)} />}
   </div>;
