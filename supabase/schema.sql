@@ -104,7 +104,11 @@ insert into public.models (sample_no, asset_url, active, order_index, credit_pub
   (3, '/models/sample-03.glb', true, 3, ''),
   (4, '/models/sample-04.glb', true, 4, ''),
   (5, '/models/sample-05.glb', true, 5, ''),
-  (6, '/models/sample-06.glb', true, 6, '')
+  (6, '/models/sample-06.glb', true, 6, ''),
+  (7, '/models/sample-07.glb', true, 7, ''),
+  (8, '/models/sample-08.glb', true, 8, ''),
+  (9, '/models/sample-09.glb', true, 9, ''),
+  (10, '/models/sample-10.glb', true, 10, '')
 on conflict (sample_no) do nothing;
 insert into public.model_details (model_id, private_title)
 select id, '예시 시료 01'
@@ -129,6 +133,22 @@ on conflict (model_id) do nothing;
 insert into public.model_details (model_id, private_title)
 select id, '시료 06 · pyo-sampel_b-web'
 from public.models where sample_no = 6
+on conflict (model_id) do nothing;
+insert into public.model_details (model_id, private_title)
+select id, '시료 07 · amy-g_web1m'
+from public.models where sample_no = 7
+on conflict (model_id) do nothing;
+insert into public.model_details (model_id, private_title)
+select id, '시료 08 · amy-s_web1m'
+from public.models where sample_no = 8
+on conflict (model_id) do nothing;
+insert into public.model_details (model_id, private_title)
+select id, '시료 09 · saguache-r_web1m'
+from public.models where sample_no = 9
+on conflict (model_id) do nothing;
+insert into public.model_details (model_id, private_title)
+select id, '시료 10 · amy_l-web1m'
+from public.models where sample_no = 10
 on conflict (model_id) do nothing;
 
 create table if not exists public.questions (

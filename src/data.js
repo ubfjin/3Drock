@@ -18,7 +18,11 @@ const thirdDemoModel = { id: 'sample-03', sample_no: 3, order_index: 3, active: 
 const fourthDemoModel = { id: 'sample-04', sample_no: 4, order_index: 4, active: true, asset_url: '/models/sample-04.glb', credit_public: '', private_title: '시료 04 · pyo-sample_g_web1M' };
 const fifthDemoModel = { id: 'sample-05', sample_no: 5, order_index: 5, active: true, asset_url: '/models/sample-05.glb', credit_public: '', private_title: '시료 05 · amy_g_261023_Web 1000k_261024_0139' };
 const sixthDemoModel = { id: 'sample-06', sample_no: 6, order_index: 6, active: true, asset_url: '/models/sample-06.glb', credit_public: '', private_title: '시료 06 · pyo-sampel_b-web' };
-const extraDemoModels = [thirdDemoModel, fourthDemoModel, fifthDemoModel, sixthDemoModel];
+const seventhDemoModel = { id: 'sample-07', sample_no: 7, order_index: 7, active: true, asset_url: '/models/sample-07.glb', credit_public: '', private_title: '시료 07 · amy-g_web1m' };
+const eighthDemoModel = { id: 'sample-08', sample_no: 8, order_index: 8, active: true, asset_url: '/models/sample-08.glb', credit_public: '', private_title: '시료 08 · amy-s_web1m' };
+const ninthDemoModel = { id: 'sample-09', sample_no: 9, order_index: 9, active: true, asset_url: '/models/sample-09.glb', credit_public: '', private_title: '시료 09 · saguache-r_web1m' };
+const tenthDemoModel = { id: 'sample-10', sample_no: 10, order_index: 10, active: true, asset_url: '/models/sample-10.glb', credit_public: '', private_title: '시료 10 · amy_l-web1m' };
+const extraDemoModels = [thirdDemoModel, fourthDemoModel, fifthDemoModel, sixthDemoModel, seventhDemoModel, eighthDemoModel, ninthDemoModel, tenthDemoModel];
 function demoData() {
   try {
     const saved = JSON.parse(localStorage.getItem(demoKey));
@@ -43,6 +47,10 @@ function demoData() {
       fourthDemoModel,
       fifthDemoModel,
       sixthDemoModel,
+      seventhDemoModel,
+      eighthDemoModel,
+      ninthDemoModel,
+      tenthDemoModel,
     ],
     questions: defaultQuestions.map((prompt, i) => ({ position: i + 1, prompt })),
     responses: {},
